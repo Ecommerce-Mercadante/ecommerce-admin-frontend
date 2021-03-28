@@ -6,6 +6,7 @@ on:
 env:
   GKE_CLUSTER: ecommerce-cluster-1
   GKE_ZONE: southamerica-east1-a
+  CONTAINER_IMAGE: haungi/ecommerce-admin-frontend
 
 jobs:
   build:
@@ -13,13 +14,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Docker meta
-        id: docker_meta
-        uses: crazy-max/ghaction-docker-meta@v1
-        with:
-          images: haungi/ecommerce-admin-frontend
-          tag-sha: true
-      
       - name: QEMU
         uses: docker/setup-qemu-action@v1
       
@@ -45,7 +39,7 @@ jobs:
           push: true
           context: .
           file: ./Dockerfile.prod
-          tags: haungi/ecommerce-admin-frontend:${{ steps.tagging.outputs.new_version }}
+          tags: ${{ env.CONTAINER_IMAGE }}:${{ steps.tagging.outputs.new_version }}
       
       - name: Gke Credentials
         id: get-credentials
@@ -56,4 +50,4 @@ jobs:
           credentials: ${{ secrets.GCP_CREDENTIALS }}
 
       - name: Set deployment image
-        run: kubectl set image deployment ecommerce-admin-frontend ecommerce-admin-frontend=haungi/ecommerce-admin-frontend:${{ steps.tagging.outputs.new_version }}
+        run: kubectl set image deployment ecommerce-admin-frontend ecommerce-admin-frontend=${{ env.CONTAINER_IMAGE }}:${{ steps.tagging.outputs.new_version }}
